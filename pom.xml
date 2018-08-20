@@ -9,22 +9,79 @@
   <packaging>pom</packaging>
   <name>datetime</name>
 
+	<modules>
+		<module>jaxrs</module>
+	</modules>
+
 	<properties>
 		<javaee.api.version>8.0</javaee.api.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.plugin.version>3.8</maven.compiler.plugin.version>
-		<maven.war.plugin.version>3.2</maven.war.plugin.version>
-		<maven.license.plugin.version>1.10.b1</maven.license.plugin.version>
+		<maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+		<maven.war.plugin.version>3.2.2</maven.war.plugin.version>
 		<maven.deploy.skip>true</maven.deploy.skip>
+		<java.version>1.8</java.version>
+		<jersey.version>2.27</jersey.version>
+		<junit.version>4.12</junit.version>
 	</properties>
 
   <dependencies>
     <dependency>
-      <groupId>javaee</groupId>
+      <groupId>javax</groupId>
       <artifactId>javaee-api</artifactId>
       <version>${javaee.api.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+    </dependency>
+    <!-- jersey -->
+    <dependency>
+        <groupId>org.glassfish.jersey.containers</groupId>
+        <artifactId>jersey-container-servlet</artifactId>
+        <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.core</groupId>
+        <artifactId>jersey-server</artifactId>
+        <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.core</groupId>
+        <artifactId>jersey-client</artifactId>
+        <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+      <artifactId>jersey-test-framework-provider-jdk-http</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
   </dependencies>
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.plugin.version}</version>
+				<inherited>true</inherited>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>${maven.war.plugin.version}</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

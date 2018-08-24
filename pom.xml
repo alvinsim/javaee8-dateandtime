@@ -23,6 +23,8 @@
         <jersey.version>2.27</jersey.version>
         <junit.version>4.12</junit.version>
         <tomcat7.maven.plugin.version>2.2</tomcat7.maven.plugin.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <apache.commons.lang.version>3.8</apache.commons.lang.version>
     </properties>
 
     <dependencies>
@@ -63,6 +65,23 @@
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
             <version>${jersey.version}</version>
+        </dependency>
+        <!-- logging using SLF4J with Java util logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <!-- apache commons lang util -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${apache.commons.lang.version}</version>
         </dependency>
     </dependencies>
 

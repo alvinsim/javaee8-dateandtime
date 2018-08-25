@@ -1,24 +1,22 @@
 package com.example.datetime.jaxrs;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Path("/datetime")
 public class DatetimeService {
 
     private final Logger logger = LoggerFactory.getLogger(DatetimeService.class);
-    final static String ERROR_MESSAGE_PARSE_DATE = "Error: Problem parsing date %s";
+    final static String ERROR_MESSAGE_PARSE_DATE = "Error: Problem parsing date '%s'";
 
     @GET
     @Path("/echo/{datetime}")
@@ -31,10 +29,10 @@ public class DatetimeService {
 
     @GET
     @Path("/countDays")
-    public Response calculateDays(@QueryParam("from") String from,
-                                  @QueryParam("to") String to) {
-        LocalDate fromDate = null;
-        LocalDate toDate = null;
+    public Response calculateDays(@DefaultValue("") @QueryParam("from") String from,
+                                  @DefaultValue("") @QueryParam("to") String to) {
+        LocalDate fromDate;
+        LocalDate toDate;
 
         try {
             fromDate = parseDate(from);

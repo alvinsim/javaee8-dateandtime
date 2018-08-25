@@ -16,7 +16,7 @@ public class DatetimeServiceTest extends JerseyTest {
     @Test
     public void shouldReturnSameParameterValue() {
         String response = target("/datetime/echo/2018-08-23").request().get(String.class);
-        Assert.assertTrue("datetime: 2018-08-23".equals(response));
+        Assert.assertEquals("datetime: 2018-08-23", response);
     }
 
     @Test
@@ -52,15 +52,15 @@ public class DatetimeServiceTest extends JerseyTest {
                 .queryParam("to", "2018-08-08")
                 .request()
                 .get(String.class);
-        Assert.assertEquals(responseWithErrorToDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, errorToDate));
+        Assert.assertEquals(responseWithBlankFromDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, ""));
 
         String responseWithNoFromDate = target("datetime/countDays")
                 .queryParam("to", "2018-08-08")
                 .request()
                 .get(String.class);
-        Assert.assertEquals(responseWithErrorToDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, errorToDate));
+        Assert.assertEquals(responseWithNoFromDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, ""));
 
         String responseWithNoDates = target("datetime/countDays").request().get(String.class);
-        Assert.assertEquals(responseWithErrorToDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, errorToDate));
+        Assert.assertEquals(responseWithNoDates, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, ""));
     }
 }

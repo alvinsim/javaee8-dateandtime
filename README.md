@@ -62,7 +62,7 @@ If you already have an instance of **Apache Tomcat** installed and the above is 
 
 1. Open a command prompt or terminal and go to your **Apache Tomcat** instance's `bin` directory (`$TOMCAT_HOME/bin`).
 2. Run the command `startup.sh` or `startup.bat` if you are on Windows. 
-3. After your instane of **Apache Tomcat** is up, open a different command prompt/terminal and go to the project's root directory.
+3. After your instance of **Apache Tomcat** is up, open a different command prompt/terminal and go to the project's root directory.
 4. Execute the **Apache Maven** command `mvn clean tomcat7:deploy -pl jaxrs`.
 5. Or you can go to the `jaxrs` module (`$PROJECT_HOME/jaxrs`) and run `mvn clean tomcat7:deploy`.
 6. After deployment is done, open your web browser and go to the URL [http://localhost:8080/webapp/service/datetime/echo/2018-08-08](http://localhost:8080/webapp/service/datetime/echo/2018-08-08). You will see the response of this example REST Web Service. 

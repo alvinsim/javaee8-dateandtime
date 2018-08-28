@@ -1,10 +1,12 @@
 package com.example.datetime.jaxrs;
 
-import javax.ws.rs.core.Application;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.Application;
 
 public class DatetimeServiceTest extends JerseyTest {
 
@@ -16,7 +18,7 @@ public class DatetimeServiceTest extends JerseyTest {
     @Test
     public void shouldReturnSameParameterValue() {
         String response = target("/datetime/echo/2018-08-23").request().get(String.class);
-        Assert.assertEquals("datetime: 2018-08-23", response);
+        Assert.assertEquals("{\"result\":\"2018-08-23\"}", response);
     }
 
     @Test
@@ -26,41 +28,32 @@ public class DatetimeServiceTest extends JerseyTest {
                 .queryParam("to", "2018-08-24")
                 .request()
                 .get(String.class);
-        Assert.assertEquals(response, "Result: " + 1);
+        Assert.assertEquals(response, "{\"result\":\"1\"}");
     }
 
-    @Test
-    public void shouldReturnWithErrorMessageForInvalidDateWhenCalculatingDaysFromTwoDates() {
-        String errorFromDate = "2018-089";
-        String responseWithErrorFromDate = target("datetime/countDays")
-                .queryParam("from", errorFromDate)
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowBadRequestExceptionForInvalidDateValueWhenCalculatingDaysFromTwoDates() {
+        target("datetime/countDays")
+                .queryParam("from", "2018-089")
                 .queryParam("to", "2018-08-10")
                 .request()
                 .get(String.class);
-        Assert.assertEquals(responseWithErrorFromDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, errorFromDate));
+    }
 
-        String errorToDate = "abc";
-        String responseWithErrorToDate = target("datetime/countDays")
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowBadRequestExceptionForBlankDateValueWhenCalculatingDaysFromTwoDates() {
+        target("datetime/countDays")
                 .queryParam("from", "2018-08-10")
-                .queryParam("to", errorToDate)
+                .queryParam("to", "")
                 .request()
                 .get(String.class);
-        Assert.assertEquals(responseWithErrorToDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, errorToDate));
+    }
 
-        String responseWithBlankFromDate = target("datetime/countDays")
-                .queryParam("from", "")
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowBadRequestExceptionForNoQueryParamWhenCalculatingDaysFromTwoDates() {
+        target("datetime/countDays")
                 .queryParam("to", "2018-08-08")
                 .request()
                 .get(String.class);
-        Assert.assertEquals(responseWithBlankFromDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, ""));
-
-        String responseWithNoFromDate = target("datetime/countDays")
-                .queryParam("to", "2018-08-08")
-                .request()
-                .get(String.class);
-        Assert.assertEquals(responseWithNoFromDate, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, ""));
-
-        String responseWithNoDates = target("datetime/countDays").request().get(String.class);
-        Assert.assertEquals(responseWithNoDates, String.format(DatetimeService.ERROR_MESSAGE_PARSE_DATE, ""));
     }
 }

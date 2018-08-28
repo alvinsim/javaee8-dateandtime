@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.time.DateTimeException;
@@ -16,19 +17,18 @@ import java.time.temporal.ChronoUnit;
 public class DatetimeService {
 
     private final Logger logger = LoggerFactory.getLogger(DatetimeService.class);
-    final static String ERROR_MESSAGE_PARSE_DATE = "Error: Problem parsing date '%s'";
+    private final static String ERROR_MESSAGE_PARSE_DATE = "Error: Problem parsing date '%s'";
 
     @GET
     @Path("/echo/{datetime}")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response echo(@PathParam("datetime") String datetime) {
-        return Response
-                .status(Response.Status.OK)
-                .entity(String.format("datetime: %s", datetime))
-                .build();
+        return appendMessageWithStatusOkToResponse(new DatetimeData(datetime));
     }
 
     @GET
     @Path("/countDays")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response calculateDays(@DefaultValue("") @QueryParam("from") String from,
                                   @DefaultValue("") @QueryParam("to") String to) {
         LocalDate fromDate;
@@ -38,20 +38,18 @@ public class DatetimeService {
             fromDate = parseDate(from);
         } catch (DateTimeException e) {
             logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, from), e);
-            return appendMessageToResponseWIthStatusOK(String.format(ERROR_MESSAGE_PARSE_DATE, from));
+            return appendMessageWithErrorToResponse(new JsonError(JsonError.TYPE.ERROR, String.format(ERROR_MESSAGE_PARSE_DATE, from)));
         }
         try {
             toDate = parseDate(to);
         } catch (DateTimeException e) {
             logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, to), e);
-            return appendMessageToResponseWIthStatusOK(String.format(ERROR_MESSAGE_PARSE_DATE, to));
+            return appendMessageWithErrorToResponse(new JsonError(JsonError.TYPE.ERROR, String.format(ERROR_MESSAGE_PARSE_DATE, to)));
         }
 
         long days = ChronoUnit.DAYS.between(fromDate, toDate);
-        return Response
-                .status(Response.Status.OK)
-                .entity(String.format("Result: %d", days))
-                .build();
+        DatetimeData datetimeData = new DatetimeData(String.valueOf(days));
+        return appendMessageWithStatusOkToResponse(datetimeData);
     }
 
     private LocalDate parseDate(String date) throws DateTimeException {
@@ -61,11 +59,11 @@ public class DatetimeService {
         return LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 
-    private Response appendMessageToResponseWIthStatusOK(String message) {
-        return Response.status(Status.OK).entity(message).build();
+    private Response appendMessageWithStatusOkToResponse(Object object) {
+        return Response.status(Status.OK).entity(object).build();
     }
 
-    private Response appendMessageWithStatusToResponse(Status status, String message) {
-        return Response.status(status).entity(message).build();
+    private Response appendMessageWithErrorToResponse(Object object) {
+        return Response.status(Status.BAD_REQUEST).entity(object).build();
     }
 }

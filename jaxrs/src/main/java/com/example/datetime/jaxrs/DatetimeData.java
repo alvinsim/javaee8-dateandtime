@@ -7,7 +7,7 @@ public class DatetimeData {
         this.result = builder.result;
     }
 
-    public DatetimeData(String result) {
+    private DatetimeData(String result) {
         DatetimeData datetimeData = new DatetimeData.DatetimeDataBuilder()
                 .withResult(result)
                 .build();

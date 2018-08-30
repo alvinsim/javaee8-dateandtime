@@ -3,10 +3,13 @@ package com.example.datetime.jaxrs;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Application;
+
+//TODO change test accordingly
 
 public class DatetimeServiceTest extends JerseyTest {
 
@@ -23,36 +26,46 @@ public class DatetimeServiceTest extends JerseyTest {
 
     @Test
     public void shouldReturnCalculatedDaysFromTwoDates() {
-        String response = target("/datetime/countDays")
-                .queryParam("from", "2018-08-23")
-                .queryParam("to", "2018-08-24")
+        String response = target("/datetime/count")
+                .queryParam("y1", "2018")
+                .queryParam("m1", "8")
+                .queryParam("d1", "23")
+                .queryParam("y2", "2018")
+                .queryParam("m2", "8")
+                .queryParam("d2", "24")
                 .request()
                 .get(String.class);
-        Assert.assertEquals(response, "{\"result\":\"1\"}");
+        Assert.assertEquals(response, "{\"years\":0.0,\"months\":0.0,\"days\":1.0,\"hours\":24.0,\"minutes\":1440.0,\"seconds\":86400.0}");
     }
 
     @Test(expected = BadRequestException.class)
     public void shouldThrowBadRequestExceptionForInvalidDateValueWhenCalculatingDaysFromTwoDates() {
-        target("datetime/countDays")
-                .queryParam("from", "2018-089")
-                .queryParam("to", "2018-08-10")
+        target("datetime/count")
+                .queryParam("y1", "2018")
+                .queryParam("m1", "089")
+                .queryParam("y2", "2018")
+                .queryParam("m2", "08")
+                .queryParam("d2", "10")
                 .request()
                 .get(String.class);
     }
 
     @Test(expected = BadRequestException.class)
     public void shouldThrowBadRequestExceptionForBlankDateValueWhenCalculatingDaysFromTwoDates() {
-        target("datetime/countDays")
-                .queryParam("from", "2018-08-10")
-                .queryParam("to", "")
+        target("datetime/count")
+                .queryParam("y1", "2018")
+                .queryParam("m1", "08")
+                .queryParam("d1", "10")
                 .request()
                 .get(String.class);
     }
 
     @Test(expected = BadRequestException.class)
     public void shouldThrowBadRequestExceptionForNoQueryParamWhenCalculatingDaysFromTwoDates() {
-        target("datetime/countDays")
-                .queryParam("to", "2018-08-08")
+        target("datetime/count")
+                .queryParam("y1", "2018")
+                .queryParam("m1", "08")
+                .queryParam("d1", "08")
                 .request()
                 .get(String.class);
     }

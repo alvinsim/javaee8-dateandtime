@@ -23,7 +23,7 @@ public class DatetimeService {
     @Path("/echo/{datetime}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response echo(final @PathParam("datetime") String datetime) {
-        return appendMessageWithStatusOkToResponse(new DatetimeData.DatetimeDataBuilder().withResult(datetime).build());
+        return appendMessageWithStatusOkToResponse(new DatetimeData.Builder().withResult(datetime).build());
     }
 
     @GET
@@ -56,24 +56,43 @@ public class DatetimeService {
         } catch (DateTimeException e) {
             logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, toYear, toMonth, toDay, toHour, toMinute, toSecond), e);
             throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, toYear, toMonth, toDay, toHour, toMinute, toSecond));
-//            return appendMessageWithErrorToResponse(new JsonError(TYPE.ERROR, String.format(ERROR_MESSAGE_PARSE_DATE, toYear, toMonth, toDay, toHour, toMinute, toSecond)));
         }
 
-        long years = ChronoUnit.YEARS.between(fromDateTime, toDateTime);
-        long months = ChronoUnit.MONTHS.between(fromDateTime, toDateTime);
+        ChronoUnitData chronoUnitData = buildChronoUnitData(fromDateTime, toDateTime);
+        PeriodData periodData = buildPeriodData(chronoUnitData);
+        DatetimeCountData datetimeCountData = new DatetimeCountData.Builder()
+                .withChronoUnitData(chronoUnitData)
+                .withPeriodData(periodData)
+                .build();
+        return appendMessageWithStatusOkToResponse(datetimeCountData);
+    }
+
+    private ChronoUnitData buildChronoUnitData(final LocalDateTime fromDateTime, final LocalDateTime toDateTime) {
+        long weeks = ChronoUnit.WEEKS.between(fromDateTime, toDateTime);
         long days = ChronoUnit.DAYS.between(fromDateTime, toDateTime);
         long hours = ChronoUnit.HOURS.between(fromDateTime, toDateTime);
         long minutes = ChronoUnit.MINUTES.between(fromDateTime, toDateTime);
         long seconds = ChronoUnit.SECONDS.between(fromDateTime, toDateTime);
-        DatetimeCountData datetimeCountData = new DatetimeCountData.DatetimeCountDataBuilder()
-                .withYears(years)
-                .withMonths(months)
+        return new ChronoUnitData.Builder()
+                .withWeeks(weeks)
                 .withDays(days)
                 .withHours(hours)
                 .withMinutes(minutes)
                 .withSeconds(seconds)
                 .build();
-        return appendMessageWithStatusOkToResponse(datetimeCountData);
+    }
+
+    private PeriodData buildPeriodData(final ChronoUnitData chronoUnitData) {
+        long days = chronoUnitData.getDays();
+        long hours = chronoUnitData.getHours() % 24;
+        long minutes = chronoUnitData.getMinutes() % 60;
+        long seconds = chronoUnitData.getSeconds() % 60;
+        return new PeriodData.Builder()
+                .withDays(days)
+                .withHours(hours)
+                .withMinutes(minutes)
+                .withSeconds(seconds)
+                .build();
     }
 
     private LocalDateTime parseDateTime(final String year, final String month, final String day, final String hour, final String minute, final String second)

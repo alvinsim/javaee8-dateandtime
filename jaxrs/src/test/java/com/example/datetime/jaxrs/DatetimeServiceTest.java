@@ -9,8 +9,6 @@ import org.junit.Test;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Application;
 
-//TODO change test accordingly
-
 public class DatetimeServiceTest extends JerseyTest {
 
     @Override
@@ -35,7 +33,33 @@ public class DatetimeServiceTest extends JerseyTest {
                 .queryParam("d2", "24")
                 .request()
                 .get(String.class);
-        Assert.assertEquals(response, "{\"years\":0.0,\"months\":0.0,\"days\":1.0,\"hours\":24.0,\"minutes\":1440.0,\"seconds\":86400.0}");
+        Assert.assertEquals(
+                "{\"chronoUnitData\":{\"weeks\":0,\"days\":1,\"hours\":24,\"minutes\":1440,\"seconds\":86400}," +
+                        "\"periodData\":{\"days\":1,\"hours\":0,\"minutes\":0,\"seconds\":0}}",
+                response);
+    }
+
+    @Test
+    public void shouldReturnCalculatedDaysFromTwoDatesWithTime() {
+        String response = target("/datetime/count")
+                .queryParam("y1", "2017")
+                .queryParam("m1", "08")
+                .queryParam("d1", "31")
+                .queryParam("h1", "10")
+                .queryParam("i1", "05")
+                .queryParam("s1", "00")
+                .queryParam("y2", "2018")
+                .queryParam("m2", "09")
+                .queryParam("d2", "02")
+                .queryParam("h2", "01")
+                .queryParam("i2", "03")
+                .queryParam("s2", "30")
+                .request()
+                .get(String.class);
+        Assert.assertEquals(
+                "{\"chronoUnitData\":{\"weeks\":52,\"days\":366,\"hours\":8798,\"minutes\":527938,\"seconds\":31676310}," +
+                        "\"periodData\":{\"days\":366,\"hours\":14,\"minutes\":58,\"seconds\":30}}",
+                response);
     }
 
     @Test(expected = BadRequestException.class)

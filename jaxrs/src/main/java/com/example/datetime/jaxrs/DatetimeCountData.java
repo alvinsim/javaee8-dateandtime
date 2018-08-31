@@ -5,85 +5,38 @@ package com.example.datetime.jaxrs;
 
 public class DatetimeCountData {
 
-    private long years;
-    private long months;
-    private long days;
-    private long hours;
-    private long minutes;
-    private long seconds;
+    private ChronoUnitData chronoUnitData;
+    private PeriodData periodData;
 
     private DatetimeCountData() {}
 
-    private DatetimeCountData(final DatetimeCountDataBuilder builder) {
-        this.years = builder.years;
-        this.months = builder.months;
-        this.days = builder.days;
-        this.hours = builder.hours;
-        this.minutes = builder.minutes;
-        this.seconds = builder.seconds;
+    public DatetimeCountData(final Builder builder) {
+        this.chronoUnitData = builder.chronoUnitData;
+        this.periodData = builder.periodData;
     }
 
-    public double getYears() {
-        return years;
+    public ChronoUnitData getChronoUnitData() {
+        return chronoUnitData;
     }
 
-    public double getMonths() {
-        return months;
+    public PeriodData getPeriodData() {
+        return periodData;
     }
 
-    public double getDays() {
-        return days;
-    }
+    static class Builder {
 
-    public double getHours() {
-        return hours;
-    }
+        private ChronoUnitData chronoUnitData;
+        private PeriodData periodData;
 
-    public double getMinutes() {
-        return minutes;
-    }
+        public Builder() {}
 
-    public double getSeconds() {
-        return seconds;
-    }
-
-    public static class DatetimeCountDataBuilder {
-        private long years;
-        private long months;
-        private long days;
-        private long hours;
-        private long minutes;
-        private long seconds;
-
-        public DatetimeCountDataBuilder() {}
-
-        public DatetimeCountDataBuilder withYears(final long year) {
-            this.years = year;
+        public Builder withChronoUnitData(final ChronoUnitData chronoUnitData) {
+            this.chronoUnitData = chronoUnitData;
             return this;
         }
 
-        public DatetimeCountDataBuilder withMonths(final long month) {
-            this.months = month;
-            return this;
-        }
-
-        public DatetimeCountDataBuilder withDays(final long day) {
-            this.days = day;
-            return this;
-        }
-
-        public DatetimeCountDataBuilder withHours(final long hour) {
-            this.hours = hour;
-            return this;
-        }
-
-        public DatetimeCountDataBuilder withMinutes(final long minute) {
-            this.minutes = minute;
-            return this;
-        }
-
-        public DatetimeCountDataBuilder withSeconds(final long second) {
-            this.seconds = second;
+        public Builder withPeriodData(final PeriodData periodData) {
+            this.periodData = periodData;
             return this;
         }
 

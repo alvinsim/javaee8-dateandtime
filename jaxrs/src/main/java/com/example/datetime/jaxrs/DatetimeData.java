@@ -3,27 +3,20 @@ package com.example.datetime.jaxrs;
 public class DatetimeData {
     private String result;
 
-    public DatetimeData(DatetimeDataBuilder builder) {
+    public DatetimeData(Builder builder) {
         this.result = builder.result;
-    }
-
-    private DatetimeData(String result) {
-        DatetimeData datetimeData = new DatetimeData.DatetimeDataBuilder()
-                .withResult(result)
-                .build();
-        this.result = datetimeData.getResult();
     }
 
     public String getResult() {
         return result;
     }
 
-    public static class DatetimeDataBuilder {
+    public static class Builder {
         private String result;
 
-        public DatetimeDataBuilder() {}
+        public Builder() {}
 
-        public DatetimeDataBuilder withResult(String result) {
+        public Builder withResult(String result) {
             this.result = result;
             return this;
         }

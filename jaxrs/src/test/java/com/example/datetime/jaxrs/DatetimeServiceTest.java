@@ -54,9 +54,6 @@ public class DatetimeServiceTest extends JerseyTest {
     @Test(expected = NotFoundException.class)
     public void shouldThrowBadRequestExceptionForBlankDateValueWhenCalculatingDaysFromTwoDates() {
         target("datetime/count/2018-08-10T00:00:00")
-                .queryParam("y1", "2018")
-                .queryParam("m1", "08")
-                .queryParam("d1", "10")
                 .request()
                 .get(String.class);
     }
@@ -64,10 +61,39 @@ public class DatetimeServiceTest extends JerseyTest {
     @Test(expected = NotFoundException.class)
     public void shouldThrowBadRequestExceptionForNoQueryParamWhenCalculatingDaysFromTwoDates() {
         target("datetime/count/2018-08-08T00:00:00")
-                .queryParam("y1", "2018")
-                .queryParam("m1", "08")
-                .queryParam("d1", "08")
                 .request()
                 .get(String.class);
+    }
+
+    @Test
+    public void shouldAddDaysToDatetime() {
+        String response = target("datetime/add/2018-09-16T00:00:00")
+                .queryParam("addDays", 1)
+                .request()
+                .get(String.class);
+        Assert.assertEquals("{\"result\":\"2018-09-17 00:00:00\"}", response);
+    }
+
+    @Test
+    public void shouldAddYearsMonthsDaysHoursMinutesSecondsToDatetime() {
+        String response = target("datetime/add/2018-09-16T00:00:00")
+                .queryParam("addYears", 1)
+                .queryParam("addMonths", 2)
+                .queryParam("addDays", 3)
+                .queryParam("addHours", 4)
+                .queryParam("addMinutes", 5)
+                .queryParam("addSeconds", 6)
+                .request()
+                .get(String.class);
+        Assert.assertEquals("{\"result\":\"2019-11-19 04:05:06\"}", response);
+    }
+
+    @Test
+    public void shouldAddWeeksToDatetime() {
+        String response = target("datetime/add/2018-09-16T00:00:00")
+                .queryParam("addWeeks", 1)
+                .request()
+                .get(String.class);
+        Assert.assertEquals("{\"result\":\"2018-09-23 00:00:00\"}", response);
     }
 }

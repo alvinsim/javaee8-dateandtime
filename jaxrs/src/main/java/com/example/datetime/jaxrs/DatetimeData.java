@@ -11,7 +11,7 @@ public class DatetimeData {
         return result;
     }
 
-    public static class Builder {
+    static class Builder {
         private String result;
 
         public Builder() {}

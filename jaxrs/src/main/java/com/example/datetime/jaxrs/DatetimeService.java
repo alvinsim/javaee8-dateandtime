@@ -31,8 +31,8 @@ public class DatetimeService {
     @GET
     @Path("/count/{fromDatetime}/{toDatetime}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response calculateDays(final @DefaultValue("") @PathParam("fromDatetime") String from,
-                                  final @DefaultValue("") @PathParam("toDatetime") String to)
+    public Response calculateDatetimeDiff(final @DefaultValue("") @PathParam("fromDatetime") String from,
+                                          final @DefaultValue("") @PathParam("toDatetime") String to)
             throws DatetimeInputException {
         LocalDateTime fromDateTime;
         LocalDateTime toDateTime;
@@ -58,6 +58,51 @@ public class DatetimeService {
                 .build();
         return appendMessageWithStatusOkToResponse(datetimeCountData);
     }
+
+    // TODO API to add years, months, weeks, days, hours, minutes and seconds to a specified datetime
+
+    @GET
+    @Path("/add/{datetime}/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addDateTime(final @DefaultValue("") @PathParam("datetime") String datetime,
+                                final @DefaultValue("0") @QueryParam("addYears") int addYears,
+                                final @DefaultValue("0") @QueryParam("addMonths") int addMonths,
+                                final @DefaultValue("0") @QueryParam("addWeeks") int addWeeks,
+                                final @DefaultValue("0") @QueryParam("addDays") int addDays,
+                                final @DefaultValue("0") @QueryParam("addHours") int addHours,
+                                final @DefaultValue("0") @QueryParam("addMinutes") int addMinutes,
+                                final @DefaultValue("0") @QueryParam("addSeconds") int addSeconds) {
+        LocalDateTime inputDatetime;
+
+        try {
+            inputDatetime = parseDateTime(datetime);
+        } catch (DateTimeParseException e) {
+            logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, datetime), e);
+            throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, datetime));
+        }
+
+        DatetimeData datetimeData = new DatetimeData.Builder()
+                .withResult(inputDatetime
+                        .plusYears(addYears)
+                        .plusMonths(addMonths)
+                        .plusWeeks(addWeeks)
+                        .plusDays(addDays)
+                        .plusHours(addHours)
+                        .plusMinutes(addMinutes)
+                        .plusSeconds(addSeconds)
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .build();
+
+        return appendMessageWithStatusOkToResponse(datetimeData);
+    }
+
+    // TODO API to convert timezones
+
+    // TODO API to count business days/weekdays between two dates
+
+    // TODO API to add weekdays to a specified datetime
+
+    // TODO API to find weekday from a specified date
 
     private ChronoUnitData buildChronoUnitData(final LocalDateTime fromDateTime, final LocalDateTime toDateTime) {
         long weeks = ChronoUnit.WEEKS.between(fromDateTime, toDateTime);

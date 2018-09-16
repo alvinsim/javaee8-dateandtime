@@ -1,5 +1,6 @@
 package com.example.datetime.jaxrs;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,9 +10,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 
 @Path("/datetime")
 public class DatetimeService {
@@ -20,6 +24,7 @@ public class DatetimeService {
 
     private final Logger logger = LoggerFactory.getLogger(DatetimeService.class);
     private final static String ERROR_MESSAGE_PARSE_DATE = "Error: Problem parsing date with value '%s'";
+    private final static String ERROR_MESSAGE_EITHER_TIMEZONE_IS_BLANK = "Error: Invalid timezone input. Either one is blank [fromTz: '%s'; toTz: '%s']";
 
     @GET
     @Path("/echo/{datetime}")
@@ -28,11 +33,15 @@ public class DatetimeService {
         return appendMessageWithStatusOkToResponse(new DatetimeData.Builder().withResult(datetime).build());
     }
 
+    // TODO API to count business days/weekdays between two dates
+
     @GET
     @Path("/count/{fromDatetime}/{toDatetime}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response calculateDatetimeDiff(final @DefaultValue("") @PathParam("fromDatetime") String from,
-                                          final @DefaultValue("") @PathParam("toDatetime") String to)
+    public Response calculateDatetimeDuration(final @DefaultValue("") @PathParam("fromDatetime") String from,
+                                              final @DefaultValue("") @PathParam("toDatetime") String to,
+                                              final @DefaultValue("") @QueryParam("fromTz") String fromTimezone,
+                                              final @DefaultValue("") @QueryParam("toTz") String toTimezone)
             throws DatetimeInputException {
         LocalDateTime fromDateTime;
         LocalDateTime toDateTime;
@@ -50,7 +59,22 @@ public class DatetimeService {
             throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, to));
         }
 
-        ChronoUnitData chronoUnitData = buildChronoUnitData(fromDateTime, toDateTime);
+        ChronoUnitData chronoUnitData;
+        // consider timezone differences if 'fromTz' and 'toTz' is not blank
+        if (StringUtils.isBlank(fromTimezone) == false && StringUtils.isBlank(toTimezone) == false) {
+            ZonedDateTime fromZonedDateTime = fromDateTime.atZone(ZoneId.of(fromTimezone));
+            ZonedDateTime toZonedDateTime = toDateTime.atZone(ZoneId.of(toTimezone));
+            chronoUnitData = buildChronoUnitData(fromZonedDateTime, toZonedDateTime);
+        }
+        // invalid imput if either one of the pair is blank
+        else if ((StringUtils.isBlank(fromTimezone) == false && StringUtils.isBlank(toTimezone)) ||
+                (StringUtils.isBlank(fromTimezone) && StringUtils.isBlank(toTimezone) == false)) {
+            logger.error(String.format(ERROR_MESSAGE_EITHER_TIMEZONE_IS_BLANK, fromTimezone, toTimezone));
+            throw new DatetimeInputException(String.format(ERROR_MESSAGE_EITHER_TIMEZONE_IS_BLANK, fromTimezone, toTimezone));
+        } else {
+            chronoUnitData = buildChronoUnitData(fromDateTime, toDateTime);
+        }
+
         PeriodData periodData = buildPeriodData(chronoUnitData);
         DatetimeCountData datetimeCountData = new DatetimeCountData.Builder()
                 .withChronoUnitData(chronoUnitData)
@@ -59,7 +83,7 @@ public class DatetimeService {
         return appendMessageWithStatusOkToResponse(datetimeCountData);
     }
 
-    // TODO API to add years, months, weeks, days, hours, minutes and seconds to a specified datetime
+    // TODO API to add weekdays to a specified datetime
 
     @GET
     @Path("/add/{datetime}/")
@@ -96,15 +120,9 @@ public class DatetimeService {
         return appendMessageWithStatusOkToResponse(datetimeData);
     }
 
-    // TODO API to convert timezones
-
-    // TODO API to count business days/weekdays between two dates
-
-    // TODO API to add weekdays to a specified datetime
-
     // TODO API to find weekday from a specified date
 
-    private ChronoUnitData buildChronoUnitData(final LocalDateTime fromDateTime, final LocalDateTime toDateTime) {
+    private ChronoUnitData buildChronoUnitData(final Temporal fromDateTime, final Temporal toDateTime) {
         long weeks = ChronoUnit.WEEKS.between(fromDateTime, toDateTime);
         long days = ChronoUnit.DAYS.between(fromDateTime, toDateTime);
         long hours = ChronoUnit.HOURS.between(fromDateTime, toDateTime);

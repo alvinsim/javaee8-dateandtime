@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Application;
 
@@ -42,6 +43,44 @@ public class DatetimeServiceTest extends JerseyTest {
                 "{\"chronoUnitData\":{\"weeks\":52,\"days\":366,\"hours\":8798,\"minutes\":527938,\"seconds\":31676310}," +
                         "\"periodData\":{\"days\":366,\"hours\":14,\"minutes\":58,\"seconds\":30}}",
                 response);
+    }
+
+    @Test
+    public void shouldReturnCalculatedDaysFromTwoDatesWithTimeAndTimezone() {
+        String response = target("/datetime/count/2017-08-31T00:00:00/2017-09-01T01:00:00")
+                .queryParam("fromTz", "Asia/Kuala_Lumpur")
+                .queryParam("toTz", "Australia/Melbourne")
+                .request()
+                .get(String.class);
+        Assert.assertEquals(
+                "{\"chronoUnitData\":{\"weeks\":0,\"days\":0,\"hours\":23,\"minutes\":1380,\"seconds\":82800}," +
+                        "\"periodData\":{\"days\":0,\"hours\":23,\"minutes\":0,\"seconds\":0}}",
+                response);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowExceptionWhenCalculatingDaysFromTwoDatesWithTimeAndBlankFromTimezone() {
+        target("datetime/count/2017-08-31T00:00:00/2017-09-01T01:00:00")
+                .queryParam("toTz", "Asia/Kuala_Lumpur")
+                .request()
+                .get(String.class);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowExceptionWhenCalculatingDaysFromTwoDatesWithTimeAndBlankToTimezone() {
+        target("datetime/count/2017-08-31T00:00:00/2017-09-01T01:00:00")
+                .queryParam("fromTz", "Asia/Kuala_Lumpur")
+                .request()
+                .get(String.class);
+    }
+
+    @Test(expected = InternalServerErrorException.class)
+    public void shouldThrowExceptionWhenCalculatingDaysFromTwoDatesWithTimeAndInvalidTimezone() {
+        target("datetime/count/2017-08-31T00:00:00/2017-09-01T01:00:00")
+                .queryParam("fromTz", "Asia/Kuala_Lumpur")
+                .queryParam("toTz", "abc")
+                .request()
+                .get(String.class);
     }
 
     @Test(expected = BadRequestException.class)

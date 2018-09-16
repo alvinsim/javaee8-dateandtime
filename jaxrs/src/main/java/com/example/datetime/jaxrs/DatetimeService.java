@@ -8,16 +8,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.time.DateTimeException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
 @Path("/datetime")
 public class DatetimeService {
 
+    // TODO add running service with jetty
+
     private final Logger logger = LoggerFactory.getLogger(DatetimeService.class);
-    private final static String ERROR_MESSAGE_PARSE_DATE = "Error: Problem parsing date [year: '%s'; month: '%s'; day: '%s'; hour: '%s'; minute: '%s'; second: '%s']";
+    private final static String ERROR_MESSAGE_PARSE_DATE = "Error: Problem parsing date with value '%s'";
 
     @GET
     @Path("/echo/{datetime}")
@@ -27,35 +29,25 @@ public class DatetimeService {
     }
 
     @GET
-    @Path("/count")
+    @Path("/count/{fromDatetime}/{toDatetime}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response calculateDays(final @DefaultValue("0") @QueryParam("d1") String fromDay,
-                                  final @DefaultValue("0") @QueryParam("m1") String fromMonth,
-                                  final @DefaultValue("0") @QueryParam("y1") String fromYear,
-                                  final @DefaultValue("0") @QueryParam("h1") String fromHour,
-                                  final @DefaultValue("0") @QueryParam("i1") String fromMinute,
-                                  final @DefaultValue("0") @QueryParam("s1") String fromSecond,
-                                  final @DefaultValue("0") @QueryParam("d2") String toDay,
-                                  final @DefaultValue("0") @QueryParam("m2") String toMonth,
-                                  final @DefaultValue("0") @QueryParam("y2") String toYear,
-                                  final @DefaultValue("0") @QueryParam("h2") String toHour,
-                                  final @DefaultValue("0") @QueryParam("i2") String toMinute,
-                                  final @DefaultValue("0") @QueryParam("s2") String toSecond)
+    public Response calculateDays(final @DefaultValue("") @PathParam("fromDatetime") String from,
+                                  final @DefaultValue("") @PathParam("toDatetime") String to)
             throws DatetimeInputException {
         LocalDateTime fromDateTime;
         LocalDateTime toDateTime;
 
         try {
-            fromDateTime = parseDateTime(fromYear, fromMonth, fromDay, fromHour, fromMinute, fromSecond);
-        } catch (DateTimeException e) {
-            logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, fromYear, fromMonth, fromDay, fromHour, fromMinute, fromSecond), e);
-            throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, fromYear, fromMonth, fromDay, fromHour, fromMinute, fromSecond));
+            fromDateTime = parseDateTime(from);
+        } catch (DateTimeParseException e) {
+            logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, from), e);
+            throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, from));
         }
         try {
-            toDateTime = parseDateTime(toYear, toMonth, toDay, toHour, toMinute, toSecond);
+            toDateTime = parseDateTime(to);
         } catch (DateTimeException e) {
-            logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, toYear, toMonth, toDay, toHour, toMinute, toSecond), e);
-            throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, toYear, toMonth, toDay, toHour, toMinute, toSecond));
+            logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, to), e);
+            throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, to));
         }
 
         ChronoUnitData chronoUnitData = buildChronoUnitData(fromDateTime, toDateTime);
@@ -95,12 +87,8 @@ public class DatetimeService {
                 .build();
     }
 
-    private LocalDateTime parseDateTime(final String year, final String month, final String day, final String hour, final String minute, final String second)
-            throws DateTimeException {
-        LocalDate localDate = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
-        LocalTime localTime = LocalTime.of(Integer.parseInt(hour), Integer.parseInt(minute), Integer.parseInt(second));
-
-        return LocalDateTime.of(localDate, localTime);
+    private LocalDateTime parseDateTime(final String datetime) throws DateTimeParseException {
+        return LocalDateTime.parse(datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
     }
 
     private Response appendMessageWithStatusOkToResponse(final Object object) {

@@ -25,3 +25,10 @@ hs_err_pid*
 # idea configuration files
 .idea/
 /jaxrs/target/
+
+# misc files 
+.project
+.settings/
+jaxrs/.project
+jaxrs/.settings/
+jaxrs/.classpath

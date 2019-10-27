@@ -36,7 +36,7 @@ The artifact of this project, which is a `war` file, will be deployed to an inst
 <tomcat-users>
   <role rolename="manager-gui"/>
   <role rolename="manager-script"/>
-  <user username="admin" password="password" roles="manager-gui,manager-scripts"/>
+  <user username="admin" password="password" roles="manager-gui,manager-script"/>
 </tomcat-users>
 ```
 If you already have an instance of **Apache Tomcat** installed and the above is already configured but using a different username/password, you can either

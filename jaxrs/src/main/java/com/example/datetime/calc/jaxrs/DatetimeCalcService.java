@@ -1,9 +1,15 @@
-package com.example.datetime.jaxrs;
+package com.example.datetime.calc.jaxrs;
 
+import com.example.datetime.calc.jaxrs.exceptions.DatetimeInputException;
+import com.example.datetime.calc.jaxrs.models.ChronoUnitData;
+import com.example.datetime.calc.jaxrs.models.DatetimeData;
+import com.example.datetime.calc.jaxrs.models.PeriodData;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -17,20 +23,33 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 
-@Path("/datetime")
-public class DatetimeService {
+@Path("/")
+public class DatetimeCalcService {
 
     // TODO add running service with jetty
 
-    private final Logger logger = LoggerFactory.getLogger(DatetimeService.class);
-    private final static String ERROR_MESSAGE_PARSE_DATE = "Error: Problem parsing date with value '%s'";
-    private final static String ERROR_MESSAGE_EITHER_TIMEZONE_IS_BLANK = "Error: Invalid timezone input. Either one is blank [fromTz: '%s'; toTz: '%s']";
+    private final Logger logger = LoggerFactory.getLogger(DatetimeCalcService.class);
+
+    private final static String ERROR_MESSAGE_PARSE_DATE = "Problem parsing date with value '%s'";
+    private final static String ERROR_MESSAGE_EITHER_TIMEZONE_IS_BLANK = "Invalid timezone input. Either one is blank [fromTz: '%s'; toTz: '%s']";
+    private final static String RESPONSE_DATA = "data";
+    private final static String RESPONSE_MESSAGE = "message";
+    private final static String RESPONSE_RESULT = "result";
+    private final static String RESPONSE_STATUS = "status";
+    private final static String RESPONSE_STATUS_ERROR = "error";
+    private final static String RESPONSE_STATUS_SUCCESS = "success";
 
     @GET
-    @Path("/echo/{datetime}")
+    @Path("/today")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response echo(final @PathParam("datetime") String datetime) {
-        return appendMessageWithStatusOkToResponse(new DatetimeData.Builder().withResult(datetime).build());
+    public Response today() {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        JsonObject result = Json.createObjectBuilder()
+                .add("date", currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .add("dayOfWeek", String.valueOf(currentDateTime.getDayOfWeek()))
+                .add("time", currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")))
+                .build();
+        return appendMessageWithStatusOkToResponse(buildSuccessResponse(result));
     }
 
     // TODO API to count business days/weekdays between two dates
@@ -45,42 +64,58 @@ public class DatetimeService {
             throws DatetimeInputException {
         LocalDateTime fromDateTime;
         LocalDateTime toDateTime;
+        String errorMessage = "";
 
         try {
             fromDateTime = parseDateTime(from);
         } catch (DateTimeParseException e) {
-            logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, from), e);
-            throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, from));
+            errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, from);
+            logger.error(errorMessage, e);
+            throw new DatetimeInputException(buildErrorResponse(errorMessage));
         }
         try {
             toDateTime = parseDateTime(to);
         } catch (DateTimeException e) {
-            logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, to), e);
-            throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, to));
+            errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, to);
+            logger.error(errorMessage, e);
+            throw new DatetimeInputException(buildErrorResponse(errorMessage));
         }
 
         ChronoUnitData chronoUnitData;
         // consider timezone differences if 'fromTz' and 'toTz' is not blank
-        if (StringUtils.isBlank(fromTimezone) == false && StringUtils.isBlank(toTimezone) == false) {
+        if (StringUtils.isNoneBlank(fromTimezone) && StringUtils.isNoneBlank(toTimezone)) {
             ZonedDateTime fromZonedDateTime = fromDateTime.atZone(ZoneId.of(fromTimezone));
             ZonedDateTime toZonedDateTime = toDateTime.atZone(ZoneId.of(toTimezone));
             chronoUnitData = buildChronoUnitData(fromZonedDateTime, toZonedDateTime);
         }
         // invalid imput if either one of the pair is blank
-        else if ((StringUtils.isBlank(fromTimezone) == false && StringUtils.isBlank(toTimezone)) ||
-                (StringUtils.isBlank(fromTimezone) && StringUtils.isBlank(toTimezone) == false)) {
-            logger.error(String.format(ERROR_MESSAGE_EITHER_TIMEZONE_IS_BLANK, fromTimezone, toTimezone));
-            throw new DatetimeInputException(String.format(ERROR_MESSAGE_EITHER_TIMEZONE_IS_BLANK, fromTimezone, toTimezone));
+        else if ((StringUtils.isNoneBlank(fromTimezone) && StringUtils.isBlank(toTimezone)) ||
+                (StringUtils.isBlank(fromTimezone) && StringUtils.isNoneBlank(toTimezone))) {
+            errorMessage = String.format(ERROR_MESSAGE_EITHER_TIMEZONE_IS_BLANK, fromTimezone, toTimezone);
+            logger.error(errorMessage);
+            throw new DatetimeInputException(buildErrorResponse(errorMessage));
         } else {
             chronoUnitData = buildChronoUnitData(fromDateTime, toDateTime);
         }
-
         PeriodData periodData = buildPeriodData(chronoUnitData);
-        DatetimeCountData datetimeCountData = new DatetimeCountData.Builder()
-                .withChronoUnitData(chronoUnitData)
-                .withPeriodData(periodData)
+
+        JsonObject result = Json.createObjectBuilder()
+                .add("chronoUnitData", Json.createObjectBuilder()
+                        .add("weeks", chronoUnitData.getWeeks())
+                        .add("days", chronoUnitData.getDays())
+                        .add("hours", chronoUnitData.getHours())
+                        .add("minutes", chronoUnitData.getMinutes())
+                        .add("seconds", chronoUnitData.getSeconds())
+                        .build())
+                .add("periodData", Json.createObjectBuilder()
+                        .add("days", periodData.getDays())
+                        .add("hours", periodData.getHours())
+                        .add("minutes", periodData.getMinutes())
+                        .add("seconds", periodData.getSeconds())
+                        .build())
                 .build();
-        return appendMessageWithStatusOkToResponse(datetimeCountData);
+
+        return appendMessageWithStatusOkToResponse(buildSuccessResponse(result));
     }
 
     // TODO API to add weekdays to a specified datetime
@@ -101,12 +136,12 @@ public class DatetimeService {
         try {
             inputDatetime = parseDateTime(datetime);
         } catch (DateTimeParseException e) {
-            logger.error(String.format(ERROR_MESSAGE_PARSE_DATE, datetime), e);
-            throw new DatetimeInputException(String.format(ERROR_MESSAGE_PARSE_DATE, datetime));
+            String errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, datetime);
+            logger.error(errorMessage, e);
+            throw new DatetimeInputException(buildErrorResponse(errorMessage));
         }
 
-        DatetimeData datetimeData = new DatetimeData.Builder()
-                .withResult(inputDatetime
+        String result = inputDatetime
                         .plusYears(addYears)
                         .plusMonths(addMonths)
                         .plusWeeks(addWeeks)
@@ -114,10 +149,9 @@ public class DatetimeService {
                         .plusHours(addHours)
                         .plusMinutes(addMinutes)
                         .plusSeconds(addSeconds)
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .build();
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        return appendMessageWithStatusOkToResponse(datetimeData);
+        return appendMessageWithStatusOkToResponse(buildSuccessResponse(result));
     }
 
     // TODO API to find weekday from a specified date
@@ -160,5 +194,33 @@ public class DatetimeService {
 
     private Response appendMessageWithErrorToResponse(final Object object) {
         return Response.status(Status.BAD_REQUEST).entity(object).build();
+    }
+
+    private String buildErrorResponse(String errorMessage) {
+        return Json.createObjectBuilder()
+                .add(RESPONSE_STATUS, RESPONSE_STATUS_ERROR)
+                .add(RESPONSE_MESSAGE, errorMessage)
+                .build()
+                .toString();
+    }
+
+    private String buildSuccessResponse(JsonObject result) {
+        return Json.createObjectBuilder()
+                .add(RESPONSE_STATUS, RESPONSE_STATUS_SUCCESS)
+                .add(RESPONSE_DATA, Json.createObjectBuilder()
+                        .add(RESPONSE_RESULT, result)
+                        .build())
+                .build()
+                .toString();
+    }
+
+    private String buildSuccessResponse(String result) {
+        return Json.createObjectBuilder()
+                .add(RESPONSE_STATUS, RESPONSE_STATUS_SUCCESS)
+                .add(RESPONSE_DATA, Json.createObjectBuilder()
+                        .add(RESPONSE_RESULT, result)
+                        .build())
+                .build()
+                .toString();
     }
 }

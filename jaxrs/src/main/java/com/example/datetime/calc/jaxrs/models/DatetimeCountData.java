@@ -1,4 +1,4 @@
-package com.example.datetime.jaxrs;
+package com.example.datetime.calc.jaxrs.models;
 
 //TODO add new entity 'DateTimeCount'
 //TODO add new entity 'DateTimeAdd'
@@ -10,7 +10,7 @@ public class DatetimeCountData {
 
     private DatetimeCountData() {}
 
-    public DatetimeCountData(final Builder builder) {
+    private DatetimeCountData(final Builder builder) {
         this.chronoUnitData = builder.chronoUnitData;
         this.periodData = builder.periodData;
     }
@@ -23,7 +23,7 @@ public class DatetimeCountData {
         return periodData;
     }
 
-    static class Builder {
+    public static class Builder {
 
         private ChronoUnitData chronoUnitData;
         private PeriodData periodData;

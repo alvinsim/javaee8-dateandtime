@@ -1,4 +1,4 @@
-package com.example.datetime.jaxrs;
+package com.example.datetime.calc.jaxrs.models;
 
 public class DatetimeData {
     private String result;
@@ -11,7 +11,7 @@ public class DatetimeData {
         return result;
     }
 
-    static class Builder {
+    public static class Builder {
         private String result;
 
         public Builder() {}

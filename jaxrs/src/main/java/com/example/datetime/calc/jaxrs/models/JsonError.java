@@ -1,4 +1,4 @@
-package com.example.datetime.jaxrs;
+package com.example.datetime.calc.jaxrs.models;
 
 public class JsonError {
     public enum TYPE { ERROR }

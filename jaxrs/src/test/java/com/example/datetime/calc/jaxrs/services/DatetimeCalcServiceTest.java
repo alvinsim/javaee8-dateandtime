@@ -1,4 +1,4 @@
-package com.example.datetime.calc.jaxrs;
+package com.example.datetime.calc.jaxrs.services;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;

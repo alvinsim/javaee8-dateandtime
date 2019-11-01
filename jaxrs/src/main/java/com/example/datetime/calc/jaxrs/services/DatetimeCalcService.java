@@ -1,8 +1,7 @@
-package com.example.datetime.calc.jaxrs;
+package com.example.datetime.calc.jaxrs.services;
 
 import com.example.datetime.calc.jaxrs.exceptions.DatetimeInputException;
 import com.example.datetime.calc.jaxrs.models.ChronoUnitData;
-import com.example.datetime.calc.jaxrs.models.DatetimeData;
 import com.example.datetime.calc.jaxrs.models.PeriodData;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -14,7 +13,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.time.DateTimeException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -66,26 +66,16 @@ public class DatetimeCalcService {
         LocalDateTime toDateTime;
         String errorMessage = "";
 
-        try {
-            fromDateTime = parseDateTime(from);
-        } catch (DateTimeParseException e) {
-            errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, from);
-            logger.error(errorMessage, e);
-            throw new DatetimeInputException(buildErrorResponse(errorMessage));
-        }
-        try {
-            toDateTime = parseDateTime(to);
-        } catch (DateTimeException e) {
-            errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, to);
-            logger.error(errorMessage, e);
-            throw new DatetimeInputException(buildErrorResponse(errorMessage));
-        }
+        fromDateTime = parseDateTime(from);
+        toDateTime = parseDateTime(to);
 
         ChronoUnitData chronoUnitData;
         // consider timezone differences if 'fromTz' and 'toTz' is not blank
         if (StringUtils.isNoneBlank(fromTimezone) && StringUtils.isNoneBlank(toTimezone)) {
-            ZonedDateTime fromZonedDateTime = fromDateTime.atZone(ZoneId.of(fromTimezone));
-            ZonedDateTime toZonedDateTime = toDateTime.atZone(ZoneId.of(toTimezone));
+            String fromTz = decode(fromTimezone);
+            String toTz = decode(toTimezone);
+            ZonedDateTime fromZonedDateTime = fromDateTime.atZone(ZoneId.of(fromTz));
+            ZonedDateTime toZonedDateTime = toDateTime.atZone(ZoneId.of(toTz));
             chronoUnitData = buildChronoUnitData(fromZonedDateTime, toZonedDateTime);
         }
         // invalid imput if either one of the pair is blank
@@ -142,14 +132,14 @@ public class DatetimeCalcService {
         }
 
         String result = inputDatetime
-                        .plusYears(addYears)
-                        .plusMonths(addMonths)
-                        .plusWeeks(addWeeks)
-                        .plusDays(addDays)
-                        .plusHours(addHours)
-                        .plusMinutes(addMinutes)
-                        .plusSeconds(addSeconds)
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                .plusYears(addYears)
+                .plusMonths(addMonths)
+                .plusWeeks(addWeeks)
+                .plusDays(addDays)
+                .plusHours(addHours)
+                .plusMinutes(addMinutes)
+                .plusSeconds(addSeconds)
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         return appendMessageWithStatusOkToResponse(buildSuccessResponse(result));
     }
@@ -185,15 +175,18 @@ public class DatetimeCalcService {
     }
 
     private LocalDateTime parseDateTime(final String datetime) throws DateTimeParseException {
-        return LocalDateTime.parse(datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        try {
+            return LocalDateTime.parse(datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        } catch (Exception e) {
+            String errorMessage;
+            errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, datetime);
+            logger.error(errorMessage, e);
+            throw new DatetimeInputException(buildErrorResponse(errorMessage));
+        }
     }
 
     private Response appendMessageWithStatusOkToResponse(final Object object) {
         return Response.status(Status.OK).entity(object).build();
-    }
-
-    private Response appendMessageWithErrorToResponse(final Object object) {
-        return Response.status(Status.BAD_REQUEST).entity(object).build();
     }
 
     private String buildErrorResponse(String errorMessage) {
@@ -222,5 +215,16 @@ public class DatetimeCalcService {
                         .build())
                 .build()
                 .toString();
+    }
+
+    private String decode(String encoded) {
+        if (StringUtils.isNoneBlank(encoded)) {
+            try {
+                return URLDecoder.decode(encoded, StandardCharsets.UTF_8.toString());
+            } catch (Exception e) {
+                throw new DatetimeInputException(e.getMessage());
+            }
+        }
+        return encoded;
     }
 }

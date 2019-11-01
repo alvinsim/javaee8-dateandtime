@@ -1,4 +1,4 @@
-package com.example.datetime.jaxrs;
+package com.example.datetime.calc.jaxrs.models;
 
 public class ChronoUnitData {
 
@@ -8,7 +8,7 @@ public class ChronoUnitData {
     private long minutes;
     private long seconds;
 
-    public ChronoUnitData(final Builder builder) {
+    private ChronoUnitData(final Builder builder) {
         this.weeks = builder.weeks;
         this.days = builder.days;
         this.hours = builder.hours;
@@ -36,7 +36,7 @@ public class ChronoUnitData {
         return seconds;
     }
 
-    static class Builder {
+    public static class Builder {
 
         private long weeks;
         private long days;

@@ -4,26 +4,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
-    <artifactId>datetime</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>java-datetimecalc</artifactId>
+    <version>0.1.0</version>
     <packaging>pom</packaging>
-    <name>datetime</name>
+    <name>java-datetimecalc</name>
 
     <modules>
         <module>jaxrs</module>
     </modules>
 
     <properties>
-        <javaee.api.version>8.0</javaee.api.version>
+        <javaee.api.version>8.0.1</javaee.api.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
-        <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
+        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <maven.deploy.skip>true</maven.deploy.skip>
         <java.version>1.8</java.version>
         <junit.version>4.12</junit.version>
-        <tomcat7.maven.plugin.version>2.2</tomcat7.maven.plugin.version>
-        <slf4j.version>1.7.25</slf4j.version>
-        <apache.commons.lang.version>3.8</apache.commons.lang.version>
+        <slf4j.version>1.7.28</slf4j.version>
+        <apache.commons.lang.version>3.9</apache.commons.lang.version>
     </properties>
 
     <dependencies>

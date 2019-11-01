@@ -1,4 +1,4 @@
-package com.example.datetime.jaxrs;
+package com.example.datetime.calc.jaxrs.exceptions;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;

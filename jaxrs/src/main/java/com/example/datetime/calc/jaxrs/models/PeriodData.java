@@ -1,4 +1,4 @@
-package com.example.datetime.jaxrs;
+package com.example.datetime.calc.jaxrs.models;
 
 public class PeriodData {
 
@@ -7,7 +7,7 @@ public class PeriodData {
     private long minutes;
     private long seconds;
 
-    public PeriodData(Builder builder) {
+    private PeriodData(Builder builder) {
         this.days = builder.days;
         this.hours = builder.hours;
         this.minutes = builder.minutes;
@@ -30,7 +30,7 @@ public class PeriodData {
         return seconds;
     }
 
-    static class Builder {
+    public static class Builder {
 
         private long days;
         private long hours;

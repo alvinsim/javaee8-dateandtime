@@ -1,8 +1,7 @@
-package com.example.datetime.calc.jaxrs;
+package com.example.datetime.calc.jaxrs.services;
 
 import com.example.datetime.calc.jaxrs.exceptions.DatetimeInputException;
 import com.example.datetime.calc.jaxrs.models.ChronoUnitData;
-import com.example.datetime.calc.jaxrs.models.DatetimeData;
 import com.example.datetime.calc.jaxrs.models.PeriodData;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -14,11 +13,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.net.StandardProtocolFamily;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -70,20 +66,8 @@ public class DatetimeCalcService {
         LocalDateTime toDateTime;
         String errorMessage = "";
 
-//        try {
-            fromDateTime = parseDateTime(from);
-//        } catch (DateTimeParseException e) {
-//            errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, from);
-//            logger.error(errorMessage, e);
-//            throw new DatetimeInputException(buildErrorResponse(errorMessage));
-//        }
-//        try {
-            toDateTime = parseDateTime(to);
-//        } catch (DateTimeException e) {
-//            errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, to);
-//            logger.error(errorMessage, e);
-//            throw new DatetimeInputException(buildErrorResponse(errorMessage));
-//        }
+        fromDateTime = parseDateTime(from);
+        toDateTime = parseDateTime(to);
 
         ChronoUnitData chronoUnitData;
         // consider timezone differences if 'fromTz' and 'toTz' is not blank
@@ -148,14 +132,14 @@ public class DatetimeCalcService {
         }
 
         String result = inputDatetime
-                        .plusYears(addYears)
-                        .plusMonths(addMonths)
-                        .plusWeeks(addWeeks)
-                        .plusDays(addDays)
-                        .plusHours(addHours)
-                        .plusMinutes(addMinutes)
-                        .plusSeconds(addSeconds)
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                .plusYears(addYears)
+                .plusMonths(addMonths)
+                .plusWeeks(addWeeks)
+                .plusDays(addDays)
+                .plusHours(addHours)
+                .plusMinutes(addMinutes)
+                .plusSeconds(addSeconds)
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         return appendMessageWithStatusOkToResponse(buildSuccessResponse(result));
     }
@@ -203,10 +187,6 @@ public class DatetimeCalcService {
 
     private Response appendMessageWithStatusOkToResponse(final Object object) {
         return Response.status(Status.OK).entity(object).build();
-    }
-
-    private Response appendMessageWithErrorToResponse(final Object object) {
-        return Response.status(Status.BAD_REQUEST).entity(object).build();
     }
 
     private String buildErrorResponse(String errorMessage) {

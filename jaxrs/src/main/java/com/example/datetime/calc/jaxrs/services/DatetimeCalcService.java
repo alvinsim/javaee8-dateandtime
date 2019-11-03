@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -25,8 +26,6 @@ import java.time.temporal.Temporal;
 
 @Path("/")
 public class DatetimeCalcService {
-
-    // TODO add running service with jetty
 
     private final Logger logger = LoggerFactory.getLogger(DatetimeCalcService.class);
 
@@ -64,11 +63,11 @@ public class DatetimeCalcService {
             throws DatetimeInputException {
         LocalDateTime fromDateTime;
         LocalDateTime toDateTime;
-        String errorMessage = "";
 
         fromDateTime = parseDateTime(from);
         toDateTime = parseDateTime(to);
 
+        String errorMessage = "";
         ChronoUnitData chronoUnitData;
         // consider timezone differences if 'fromTz' and 'toTz' is not blank
         if (StringUtils.isNoneBlank(fromTimezone) && StringUtils.isNoneBlank(toTimezone)) {
@@ -144,7 +143,22 @@ public class DatetimeCalcService {
         return appendMessageWithStatusOkToResponse(buildSuccessResponse(result));
     }
 
-    // TODO API to find weekday from a specified date
+    @GET
+    @Path("/getDayOfWeek/{date}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDayOfWeekFromDateTime(final @DefaultValue("") @PathParam("date") String dateValue) {
+        LocalDate inputDate;
+
+        try {
+            inputDate = parseDate(dateValue);
+        } catch (DateTimeParseException e) {
+            String errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, dateValue);
+            logger.error(errorMessage, e);
+            throw new DatetimeInputException(buildErrorResponse(errorMessage));
+        }
+
+        return appendMessageWithStatusOkToResponse(buildSuccessResponse(inputDate.getDayOfWeek().toString()));
+    }
 
     private ChronoUnitData buildChronoUnitData(final Temporal fromDateTime, final Temporal toDateTime) {
         long weeks = ChronoUnit.WEEKS.between(fromDateTime, toDateTime);
@@ -152,12 +166,12 @@ public class DatetimeCalcService {
         long hours = ChronoUnit.HOURS.between(fromDateTime, toDateTime);
         long minutes = ChronoUnit.MINUTES.between(fromDateTime, toDateTime);
         long seconds = ChronoUnit.SECONDS.between(fromDateTime, toDateTime);
-        return new ChronoUnitData.Builder()
-                .withWeeks(weeks)
-                .withDays(days)
-                .withHours(hours)
-                .withMinutes(minutes)
-                .withSeconds(seconds)
+        return ChronoUnitData.builder()
+                .weeks(weeks)
+                .days(days)
+                .hours(hours)
+                .minutes(minutes)
+                .seconds(seconds)
                 .build();
     }
 
@@ -166,20 +180,31 @@ public class DatetimeCalcService {
         long hours = chronoUnitData.getHours() % 24;
         long minutes = chronoUnitData.getMinutes() % 60;
         long seconds = chronoUnitData.getSeconds() % 60;
-        return new PeriodData.Builder()
-                .withDays(days)
-                .withHours(hours)
-                .withMinutes(minutes)
-                .withSeconds(seconds)
+        return PeriodData.builder()
+                .days(days)
+                .hours(hours)
+                .minutes(minutes)
+                .seconds(seconds)
                 .build();
     }
 
     private LocalDateTime parseDateTime(final String datetime) throws DateTimeParseException {
         try {
-            return LocalDateTime.parse(datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+            return LocalDateTime.parse(datetime, DateTimeFormatter.ISO_DATE_TIME);
         } catch (Exception e) {
             String errorMessage;
             errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, datetime);
+            logger.error(errorMessage, e);
+            throw new DatetimeInputException(buildErrorResponse(errorMessage));
+        }
+    }
+
+    private LocalDate parseDate(final String date) throws DateTimeParseException {
+        try {
+            return LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+        } catch (Exception e) {
+            String errorMessage;
+            errorMessage = String.format(ERROR_MESSAGE_PARSE_DATE, date);
             logger.error(errorMessage, e);
             throw new DatetimeInputException(buildErrorResponse(errorMessage));
         }

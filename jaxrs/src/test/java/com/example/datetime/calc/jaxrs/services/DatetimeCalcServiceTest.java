@@ -230,4 +230,29 @@ public class DatetimeCalcServiceTest extends JerseyTest {
                 .toString();
         Assert.assertEquals(expectedResponse, response);
     }
+
+    @Test
+    public void shouldReturnTheDayOfWeekFromAGivenDate() {
+        String response = target("/getDayOfWeek/2019-11-02")
+                .request()
+                .get(String.class);
+        String expectedResponse = Json.createObjectBuilder()
+                .add(RESPONSE_STATUS, RESPONSE_STATUS_SUCCESS)
+                .add(RESPONSE_DATA, Json.createObjectBuilder()
+                        .add(RESPONSE_RESULT, "SATURDAY")
+                        .build())
+                .build()
+                .toString();
+        Assert.assertEquals(expectedResponse, response);
+    }
+
+    @Test(expected = NotFoundException.class)
+    public void shouldThrowExceptionWhenGetDayOfWeekFromDateTimeHasNoInput() {
+        target("/getDayOfWeek").request().get(String.class);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void shouldThrowExceptionWhenGetDayOfWeekFromDateTimeHasInvalidInput() {
+        target("/getDayOfWeek/abcdef").request().get(String.class);
+    }
 }

@@ -1,78 +1,15 @@
 package com.example.datetime.calc.jaxrs.models;
 
+import lombok.Builder;
+import lombok.Getter;
+
+@Builder
+@Getter
 public class ChronoUnitData {
 
-    private long weeks;
-    private long days;
-    private long hours;
-    private long minutes;
-    private long seconds;
-
-    private ChronoUnitData(final Builder builder) {
-        this.weeks = builder.weeks;
-        this.days = builder.days;
-        this.hours = builder.hours;
-        this.minutes = builder.minutes;
-        this.seconds = builder.seconds;
-    }
-
-    public long getWeeks() {
-        return weeks;
-    }
-
-    public long getDays() {
-        return days;
-    }
-
-    public long getHours() {
-        return hours;
-    }
-
-    public long getMinutes() {
-        return minutes;
-    }
-
-    public long getSeconds() {
-        return seconds;
-    }
-
-    public static class Builder {
-
-        private long weeks;
-        private long days;
-        private long hours;
-        private long minutes;
-        private long seconds;
-
-        public Builder() {}
-
-        public Builder withWeeks(final long weeks) {
-            this.weeks = weeks;
-            return this;
-        }
-
-        public Builder withDays(final long days) {
-            this.days = days;
-            return this;
-        }
-
-        public Builder withHours(final long hours) {
-            this.hours = hours;
-            return this;
-        }
-
-        public Builder withMinutes(final long minutes) {
-            this.minutes = minutes;
-            return this;
-        }
-
-        public Builder withSeconds(final long seconds) {
-            this.seconds = seconds;
-            return this;
-        }
-
-        public ChronoUnitData build() {
-            return new ChronoUnitData(this);
-        }
-    }
+    private final long weeks;
+    private final long days;
+    private final long hours;
+    private final long minutes;
+    private final long seconds;
 }

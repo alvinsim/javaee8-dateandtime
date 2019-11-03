@@ -65,6 +65,7 @@ If you already have an instance of **Apache Tomcat** installed and the above is 
 3. After your instance of **Apache Tomcat** is up, open a different command prompt/terminal and go to the project's root directory.
 4. Execute the **Apache Maven** command `mvn clean tomcat7:deploy -pl jaxrs`, or you can go to the `jaxrs` module directory (`$PROJECT_HOME/jaxrs`) and run `mvn clean tomcat7:deploy`.
 6. After deployment is done, open your web browser and go to the URL [http://localhost:8080/datetime-calc/api/today](http://localhost:8080/datetime-calc/api/today). You will see the response of this example REST Web Service. Or you can open a command prompt and use `curl` instead.
+7. When code changes were made and it needs to be packaged and re-deploy to the tomcat instance, either run `tomcat7:redeploy` or `tomcat7:undeploy` and followed by `tomcat7:deploy`.
 
 ## API Reference
 
@@ -184,6 +185,37 @@ curl --get http://localhost:8080/datetime-calc/api/add/2017-08-31T00:00:00 -d ad
   "status": "success",
   "data": {
     "result": "2018-08-31 00:00:00"
+  }
+}
+```
+
+### Gets the day of the week
+
+Gets the day of week from a date
+
+#### Endpoint
+
+```
+GET http://localhost:8080/datetime-calc/api/getDayOfWeek/:date
+```
+
+#### Parameters
+
+- `date` `[yyyy-MM-dd]`
+
+#### Example Request
+
+```
+curl --get http://localhost:8080/datetime-calc/api/getDayOfWeek/2017-08-31
+```
+
+#### Example Response
+
+```json
+{
+  "status": "success",
+  "data": {
+    "result": "THURSDAY"
   }
 }
 ```
